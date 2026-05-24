@@ -8,6 +8,8 @@ const express = require('express');
 const router = express.Router();
 const polygonService = require('../services/polygonService');
 const indicatorService = require('../services/indicatorService');
+const claudeService = require('../services/claudeService');
+const cache = require('../services/cacheService');
 
 /**
  * GET /api/stock/:symbol
@@ -138,5 +140,72 @@ function buildPlainEnglishSummary(company, price, indicators) {
 
   return lines.join(' ');
 }
+
+/**
+ * GET /api/stock/:symbol/analyze
+ *
+ * The main AI analysis endpoint.
+ * Fetches stock data, runs indicators, sends to Claude,
+ * returns a full plain-English analysis.
+ *
+ * This is an expensive call (hits Anthropic API) so we cache it
+ * for 10 minutes. You can bust the cache with ?fresh=true
+ */
+router.get('/:symbol/analyze', async (req, res, next) => {
+  try {
+    const symbol = req.params.symbol.toUpperCase().replace(/[^A-Z]/g, '');
+
+    if (!symbol || symbol.length > 5) {
+      return res.status(400).json({ error: 'Invalid stock symbol' });
+    }
+
+    // Check cache first — skip if ?fresh=true
+    const cacheKey = `analysis:${symbol}`;
+    if (req.query.fresh !== 'true') {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return res.json({ ...cached, fromCache: true });
+      }
+    }
+
+    // Build full stock data (reuse existing logic)
+    const [companyDetails, previousClose, historicalBars] = await Promise.all([
+      polygonService.getCompanyDetails(symbol),
+      polygonService.getPreviousClose(symbol),
+      polygonService.getHistoricalBars(symbol, 60)
+    ]);
+
+    const indicators = indicatorService.analyzeIndicators(
+      historicalBars,
+      previousClose.close
+    );
+
+    const stockData = {
+      symbol,
+      company: companyDetails,
+      price: previousClose,
+      indicators
+    };
+
+    // Send to Claude
+    const analysis = await claudeService.analyzeStock(stockData);
+
+    // Cache the result
+    cache.set(cacheKey, analysis, cache.TTL.ANALYSIS);
+
+    res.json({ ...analysis, fromCache: false });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/cache/stats
+ * Development utility — see what's currently cached.
+ */
+router.get('/cache/stats', (req, res) => {
+  res.json(cache.stats());
+});
 
 module.exports = router;
