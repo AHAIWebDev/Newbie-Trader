@@ -129,15 +129,35 @@ export default function AnalysisCard({ symbol }) {
   const fetchAnalysis = async (fresh = false) => {
     setLoading(true);
     setError(null);
-    try {
-      const data = await getAnalysis(symbol, fresh);
-      setAnalysis(data);
-      setFromCache(data.fromCache);
-    } catch (err) {
-      setError(err.response?.data?.error ?? 'Failed to fetch analysis. Check your API key.');
-    } finally {
-      setLoading(false);
+
+    // Try up to 2 times before showing an error
+    // First attempt may be slow if Polygon cache is cold
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const data = await getAnalysis(symbol, fresh);
+        setAnalysis(data);
+        setFromCache(data.fromCache);
+        setLoading(false);
+        return; // success — exit early
+      } catch (err) {
+        lastError = err;
+        if (attempt === 1) {
+          console.log('First analysis attempt failed, retrying...');
+          // Brief pause before retry to let any rate limits settle
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
     }
+
+    // Both attempts failed — show error
+    setError(
+      lastError.response?.data?.error ??
+      lastError.response?.data?.hint ??
+      'Analysis timed out. The AI is taking longer than expected — please try again.'
+    );
+    setLoading(false);
   };
 
   const sections = analysis ? parseAnalysisSections(analysis.analysis) : [];

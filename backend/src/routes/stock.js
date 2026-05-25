@@ -159,7 +159,11 @@ router.get('/:symbol/analyze', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid stock symbol' });
     }
 
-    // Check cache first — skip if ?fresh=true
+    // Set a 55-second timeout on the response
+    // Claude can take 10-15s; Polygon adds more on cold cache
+    req.setTimeout(55000);
+    res.setTimeout(55000);
+
     const cacheKey = `analysis:${symbol}`;
     if (req.query.fresh !== 'true') {
       const cached = cache.get(cacheKey);
@@ -168,7 +172,6 @@ router.get('/:symbol/analyze', async (req, res, next) => {
       }
     }
 
-    // Build full stock data (reuse existing logic)
     const [companyDetails, previousClose, historicalBars] = await Promise.all([
       polygonService.getCompanyDetails(symbol),
       polygonService.getPreviousClose(symbol),
@@ -187,10 +190,8 @@ router.get('/:symbol/analyze', async (req, res, next) => {
       indicators
     };
 
-    // Send to Claude
     const analysis = await claudeService.analyzeStock(stockData);
 
-    // Cache the result
     cache.set(cacheKey, analysis, cache.TTL.ANALYSIS);
 
     res.json({ ...analysis, fromCache: false });

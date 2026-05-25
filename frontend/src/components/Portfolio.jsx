@@ -33,7 +33,7 @@ function savePortfolio(portfolio) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
 }
 
-export default function Portfolio({ symbol, currentPrice }) {
+export default function Portfolio({ symbol, currentPrice, onCashChange }) {
   const [portfolio, setPortfolio] = useState(loadPortfolio);
   const [shares, setShares]       = useState('');
   const [activeTab, setActiveTab] = useState('positions');
