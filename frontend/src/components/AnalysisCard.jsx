@@ -120,7 +120,7 @@ const SECTION_ICONS = {
   'One Thing to Learn': '🎓',
 };
 
-export default function AnalysisCard({ symbol }) {
+export default function AnalysisCard({ symbol, onAnalysisComplete }) {
   const [analysis, setAnalysis]   = useState(null);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState(null);
@@ -139,6 +139,7 @@ export default function AnalysisCard({ symbol }) {
         const data = await getAnalysis(symbol, fresh);
         setAnalysis(data);
         setFromCache(data.fromCache);
+        onAnalysisComplete?.(data);
         setLoading(false);
         return; // success — exit early
       } catch (err) {
