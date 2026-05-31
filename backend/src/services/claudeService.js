@@ -141,4 +141,65 @@ const analyzeStock = async (stockData) => {
   };
 };
 
-module.exports = { analyzeStock };
+/**
+ * Summarize a list of news articles for a stock symbol.
+ * Uses a lighter model (Haiku) since the task is simpler than full analysis.
+ *
+ * @param {string} symbol   - Stock ticker
+ * @param {Array}  articles - Normalized articles from newsService
+ * @returns {{ summary: string, sentiment: "bullish"|"bearish"|"neutral" }}
+ */
+const summarizeNews = async (symbol, articles) => {
+  if (!articles || articles.length === 0) {
+    return {
+      summary: 'No recent news articles were found for this stock.',
+      sentiment: 'neutral'
+    };
+  }
+
+  const articleList = articles
+    .map((a, i) => {
+      const date = new Date(a.publishedAt).toLocaleDateString();
+      const desc = a.description ? `\n   ${a.description}` : '';
+      return `${i + 1}. "${a.title}" — ${a.publisher} (${date})${desc}`;
+    })
+    .join('\n\n');
+
+  const prompt = `Here are recent news headlines for ${symbol}:
+
+${articleList}
+
+Please analyze these headlines and respond using exactly these section headers:
+
+### Dominant Sentiment
+State bullish, bearish, or neutral in the first sentence, then explain why in one more sentence.
+
+### Headline Breakdown
+For each headline (numbered to match), one plain-English sentence: what does this mean for the stock, and is it positive, negative, or neutral?
+
+### Key Events to Watch
+Are there earnings reports, Fed decisions, regulatory filings, product launches, or major corporate events mentioned? If none, say "No major scheduled events identified."
+
+### Technical vs News Alignment
+Does this news sentiment align with or contradict typical technical indicator signals a swing trader might see? What should a beginner keep in mind?`;
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 600,
+    system: `You are a financial news educator inside a beginner's paper trading app called Newbie Trader. Explain financial news in plain English for someone new to investing. Never give direct buy or sell advice. Always remind the reader that news sentiment can reverse quickly and does not guarantee price movement. This is for educational purposes only.`,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const rawText = message.content[0].text;
+
+  // Extract sentiment from the Dominant Sentiment section
+  const sentimentSection = rawText.match(/### Dominant Sentiment[\s\S]*?(?=###|$)/i)?.[0] ?? '';
+  const sentimentMatch   = sentimentSection.match(/\b(bullish|bearish|neutral)\b/i);
+  const sentiment        = sentimentMatch
+    ? sentimentMatch[1].toLowerCase()
+    : 'neutral';
+
+  return { summary: rawText, sentiment };
+};
+
+module.exports = { analyzeStock, summarizeNews };

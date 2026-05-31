@@ -58,3 +58,16 @@ export const getHistory = async (symbol, days = 60) => {
   });
   return data;
 };
+
+/**
+ * Fetch recent news headlines + Claude sentiment summary for a stock.
+ * @param {string}  symbol
+ * @param {boolean} fresh - bypass cache if true
+ */
+export const getNews = async (symbol, fresh = false) => {
+  const { data } = await client.get(
+    `/stock/${symbol}/news`,
+    { params: fresh ? { fresh: 'true' } : {} }
+  );
+  return data;
+};

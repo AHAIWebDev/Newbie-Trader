@@ -9,6 +9,7 @@ const router = express.Router();
 const polygonService = require('../services/polygonService');
 const indicatorService = require('../services/indicatorService');
 const claudeService = require('../services/claudeService');
+const newsService = require('../services/newsService');
 const cache = require('../services/cacheService');
 
 /**
@@ -195,6 +196,49 @@ router.get('/:symbol/analyze', async (req, res, next) => {
     cache.set(cacheKey, analysis, cache.TTL.ANALYSIS);
 
     res.json({ ...analysis, fromCache: false });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/stock/:symbol/news
+ *
+ * Returns recent headlines + Claude's plain-English sentiment summary.
+ * Fetches from Polygon first; supplements with NewsAPI if < 3 results.
+ * Cached for 15 minutes. Bust with ?fresh=true.
+ */
+router.get('/:symbol/news', async (req, res, next) => {
+  try {
+    const symbol = req.params.symbol.toUpperCase().replace(/[^A-Z]/g, '');
+
+    if (!symbol || symbol.length > 5) {
+      return res.status(400).json({ error: 'Invalid stock symbol' });
+    }
+
+    const cacheKey = `news:${symbol}`;
+
+    if (req.query.fresh !== 'true') {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return res.json({ ...cached, fromCache: true });
+      }
+    }
+
+    const articles = await newsService.getNews(symbol);
+    const { summary, sentiment } = await claudeService.summarizeNews(symbol, articles);
+
+    const result = {
+      symbol,
+      articles,
+      summary,
+      sentiment,
+      generatedAt: new Date().toISOString()
+    };
+
+    cache.set(cacheKey, result, cache.TTL.NEWS);
+    res.json({ ...result, fromCache: false });
 
   } catch (err) {
     next(err);

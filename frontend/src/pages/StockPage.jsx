@@ -7,6 +7,7 @@ import IndicatorPanel     from '../components/IndicatorPanel';
 import AnalysisCard       from '../components/AnalysisCard';
 import PositionSizer      from '../components/PositionSizer';
 import Portfolio          from '../components/Portfolio';
+import NewsPanel          from '../components/NewsPanel';
 
 export default function StockPage() {
   const [stock,          setStock]          = useState(null);
@@ -122,6 +123,9 @@ export default function StockPage() {
             symbol={stock.symbol}
             onAnalysisComplete={setCurrentAnalysis}
           />
+
+          {/* News panel — auto-fetches on stock load */}
+          <NewsPanel symbol={stock.symbol} />
 
         </div>
       )}

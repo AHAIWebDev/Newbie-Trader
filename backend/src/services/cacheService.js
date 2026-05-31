@@ -19,10 +19,11 @@ const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
 const TTL = {
-  PRICE:      5 * 60,   // 5 minutes
-  COMPANY:    24 * 60 * 60, // 24 hours
-  ANALYSIS:   10 * 60,  // 10 minutes
-  HISTORY:    15 * 60   // 15 minutes
+  PRICE:      5 * 60,        // 5 minutes
+  COMPANY:    24 * 60 * 60,  // 24 hours
+  ANALYSIS:   10 * 60,       // 10 minutes
+  HISTORY:    15 * 60,       // 15 minutes
+  NEWS:       15 * 60        // 15 minutes
 };
 
 /**
