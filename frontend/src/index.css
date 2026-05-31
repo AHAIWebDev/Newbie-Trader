@@ -13,50 +13,64 @@
 }
 
 /* ─── Animations ────────────────────────────────────────────────────────────── */
-@keyframes gradientShift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes gridFade {
-  0%, 100% { opacity: 0.03; }
-  50%       { opacity: 0.07; }
+@keyframes kenBurns {
+  0%   { transform: scale(1.0); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1.0); }
 }
 
 /* ─── Base Styles ──────────────────────────────────────────────────────────── */
 @layer base {
-  body {
+  /* Solid fallback colour shown before image loads */
+  html {
     background-color: #0a0f1e;
-    background-image:
-      radial-gradient(ellipse at 20% 50%, rgba(29, 78, 216, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, rgba(6, 78, 59, 0.10) 0%, transparent 50%);
-    background-size: 200% 200%;
-    animation: gradientShift 20s ease infinite;
+  }
+
+  /*
+   * Stacking order (bottom → top):
+   *   body::after  z-index 0  — photo with Ken Burns zoom
+   *   body::before z-index 1  — dark overlay + grid lines
+   *   #root        z-index 2  — all UI content
+   *
+   * body must stay transparent so ::after shows through.
+   */
+  body {
+    background-color: transparent;
     min-height: 100vh;
     color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Subtle grid overlay — financial terminal aesthetic */
+  /* Background photo — slow Ken Burns zoom over 60 s */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: -5%;
+    background-image: url('/background.jpg');
+    background-size: cover;
+    background-position: center center;
+    animation: kenBurns 60s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  /* Dark overlay + subtle grid — sits above photo, below content */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background-image:
+    background:
       linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
-    animation: gridFade 8s ease-in-out infinite;
+      linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px),
+      rgba(10, 15, 30, 0.80);
+    background-size: 50px 50px, 50px 50px, cover;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
   }
 
-  /* Ensure all content sits above the grid overlay */
+  /* All UI content above the overlay */
   #root {
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
 }
 
