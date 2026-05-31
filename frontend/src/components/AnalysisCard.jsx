@@ -99,8 +99,15 @@ function ConfidenceMeter({ confidence }) {
       </div>
       <div className="w-full bg-slate-700 rounded-full h-2.5 mb-2">
         <div
-          className={`h-2.5 rounded-full transition-all duration-500 ${color}`}
-          style={{ width: `${confidence}%` }}
+          className={`h-2.5 rounded-full transition-all duration-700 ${color}`}
+          style={{
+            width: `${confidence}%`,
+            boxShadow: confidence >= 60
+              ? '0 0 8px rgba(34, 197, 94, 0.6)'
+              : confidence >= 40
+              ? '0 0 8px rgba(250, 204, 21, 0.6)'
+              : '0 0 8px rgba(239, 68, 68, 0.6)'
+          }}
         />
       </div>
       <p className="text-xs text-slate-500">

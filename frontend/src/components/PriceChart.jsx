@@ -88,6 +88,8 @@ export default function PriceChart({ bars, sma20, sma50 }) {
         </div>
       </div>
 
+      <div className="rounded-lg overflow-hidden"
+           style={{ background: 'linear-gradient(180deg, rgba(30,41,59,0.5) 0%, rgba(15,23,42,0.3) 100%)' }}>
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart data={chartData} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
           <defs>
@@ -97,7 +99,7 @@ export default function PriceChart({ bars, sma20, sma50 }) {
             </linearGradient>
           </defs>
 
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
 
           <XAxis
             dataKey="label"
@@ -149,6 +151,7 @@ export default function PriceChart({ bars, sma20, sma50 }) {
           />
         </AreaChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }

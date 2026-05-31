@@ -211,7 +211,9 @@ export default function Portfolio({
 
         {/* Total return */}
         <div className={`p-2.5 rounded-lg mb-4 text-center text-sm
-                          ${totalReturn >= 0 ? 'bg-green-950' : 'bg-red-950'}`}>
+                          ${totalReturn >= 0
+                            ? 'bg-green-950/50 card-glow-bull'
+                            : 'bg-red-950/50 card-glow-bear'}`}>
           <span className="text-slate-400 text-xs">Total Return: </span>
           <span className={`font-mono font-bold
                              ${totalReturn >= 0 ? 'text-bull' : 'text-bear'}`}>

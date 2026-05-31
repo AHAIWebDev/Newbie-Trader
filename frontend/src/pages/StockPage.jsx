@@ -50,27 +50,39 @@ export default function StockPage() {
 
       {/* Landing state */}
       {!stock && !loading && !error && (
-        <div className="text-center py-24">
-          <div className="text-6xl mb-4">📊</div>
-          <h2 className="text-2xl font-bold text-slate-300 mb-2">
-            Search a stock to get started
-          </h2>
-          <p className="text-slate-500 max-w-md mx-auto mb-6">
-            View price data, technical indicators, and an AI-powered educational
-            analysis. Make paper trades and log your reasoning in the journal.
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'SPY', 'AMD', 'NVDA'].map(s => (
-              <button
-                key={s}
-                onClick={() => handleSearch(s)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border
-                           border-slate-700 text-slate-300 font-mono text-sm
-                           rounded-lg transition-colors"
-              >
-                {s}
-              </button>
-            ))}
+        <div className="text-center py-24 relative">
+          {/* Decorative glow orbs */}
+          <div className="absolute top-10 left-1/4 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-20 right-1/4 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative">
+            <div className="text-7xl mb-6 drop-shadow-[0_0_20px_rgba(96,165,250,0.4)]">📈</div>
+            <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
+              Welcome to Newbie Trader
+            </h2>
+            <p className="text-slate-500 max-w-md mx-auto mb-8 leading-relaxed">
+              Search any stock symbol to view price data, technical indicators,
+              and an AI-powered educational analysis. Make paper trades and
+              log your reasoning in the journal.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'SPY', 'AMD', 'NVDA'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => handleSearch(s)}
+                  className="px-4 py-2 rounded-lg font-mono text-sm
+                             bg-slate-800/60 backdrop-blur-sm
+                             border border-slate-700/60
+                             text-slate-300 hover:text-white
+                             hover:border-blue-500/50
+                             hover:bg-slate-700/60
+                             hover:shadow-[0_0_12px_rgba(96,165,250,0.2)]
+                             transition-all duration-200"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

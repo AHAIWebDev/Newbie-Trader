@@ -8,26 +8,96 @@
   --color-bear:       #ef4444;
   --color-neutral:    #94a3b8;
   --color-surface:    #1e293b;
-  --color-background: #0f172a;
+  --color-background: #0a0f1e;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────────────── */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes gridFade {
+  0%, 100% { opacity: 0.03; }
+  50%       { opacity: 0.07; }
 }
 
 /* ─── Base Styles ──────────────────────────────────────────────────────────── */
 @layer base {
   body {
-    background-color: var(--color-background);
+    background-color: #0a0f1e;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(29, 78, 216, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(6, 78, 59, 0.10) 0%, transparent 50%);
+    background-size: 200% 200%;
+    animation: gradientShift 20s ease infinite;
+    min-height: 100vh;
     color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Subtle grid overlay — financial terminal aesthetic */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridFade 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ensure all content sits above the grid overlay */
+  #root {
+    position: relative;
+    z-index: 1;
   }
 }
 
 /* ─── Reusable Component Classes ───────────────────────────────────────────── */
 @layer components {
   .card {
-    background-color: var(--color-surface);
+    background: rgba(30, 41, 59, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 0.75rem;
-    border: 1px solid #334155;
+    border: 1px solid rgba(148, 163, 184, 0.1);
     padding: 1.25rem;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    border-color: rgba(148, 163, 184, 0.2);
+    box-shadow:
+      0 8px 25px -5px rgba(0, 0, 0, 0.4),
+      0 4px 6px -2px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .card-glow-bull {
+    box-shadow:
+      0 0 20px rgba(34, 197, 94, 0.08),
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-color: rgba(34, 197, 94, 0.2);
+  }
+
+  .card-glow-bear {
+    box-shadow:
+      0 0 20px rgba(239, 68, 68, 0.08),
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-color: rgba(239, 68, 68, 0.2);
   }
 
   .badge-bull {

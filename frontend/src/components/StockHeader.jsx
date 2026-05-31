@@ -14,6 +14,9 @@ export default function StockHeader({ stock }) {
 
   const changeColor = isPositive ? 'text-bull' : 'text-bear';
   const changeSign  = isPositive ? '+' : '';
+  const priceGlow   = isPositive
+    ? 'drop-shadow-[0_0_12px_rgba(34,197,94,0.4)]'
+    : 'drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]';
 
   return (
     <div className="card">
@@ -39,7 +42,7 @@ export default function StockHeader({ stock }) {
 
         {/* Right: Price block */}
         <div className="text-right shrink-0">
-          <div className="text-4xl font-mono font-bold text-white">
+          <div className={`text-4xl font-mono font-bold text-white ${priceGlow}`}>
             ${price.close.toFixed(2)}
           </div>
           <div className={`text-lg font-mono font-semibold ${changeColor}`}>

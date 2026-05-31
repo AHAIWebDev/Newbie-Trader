@@ -9,10 +9,10 @@ import PerformancePage from './pages/PerformancePage';
  */
 function TopNav() {
   return (
-    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-20">
+    <header className="border-b border-slate-700/50 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-20 shadow-lg shadow-black/20">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-blue-400 text-lg">
+          <span className="font-mono font-bold text-lg bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
             📈 Newbie Trader
           </span>
           <span className="text-xs text-slate-600 hidden sm:inline">
@@ -43,6 +43,7 @@ function TopNav() {
           ))}
         </nav>
       </div>
+      <div className="h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
     </header>
   );
 }
