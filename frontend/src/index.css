@@ -46,9 +46,11 @@
     content: '';
     position: fixed;
     inset: -5%;
-    background-image: url('/background.jpg');
+    background-image: url('/background.webp');
     background-size: cover;
     background-position: center center;
+    image-rendering: auto;
+    will-change: transform;
     animation: kenBurns 60s ease-in-out infinite;
     z-index: 0;
   }
