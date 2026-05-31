@@ -128,3 +128,20 @@ export const resetPortfolio = async (startingCash = 10000) => {
   const { data } = await client.post('/portfolio/reset', { startingCash });
   return data;
 };
+
+/**
+ * Returns account equity at each trade event for charting an equity curve.
+ * Each point: { date, equity, event, symbol, label }
+ */
+export const getEquityHistory = async () => {
+  const { data } = await client.get('/portfolio/equity-history');
+  return data;
+};
+
+/**
+ * Returns win-rate breakdown by RSI and SMA signal at time of each closed trade.
+ */
+export const getSignalAccuracy = async () => {
+  const { data } = await client.get('/portfolio/signal-accuracy');
+  return data;
+};

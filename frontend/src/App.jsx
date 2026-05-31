@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import StockPage   from './pages/StockPage';
-import JournalPage from './pages/JournalPage';
+import StockPage       from './pages/StockPage';
+import JournalPage     from './pages/JournalPage';
+import PerformancePage from './pages/PerformancePage';
 
 /**
  * Top-level navigation bar — persists across all pages.
@@ -22,8 +23,9 @@ function TopNav() {
         {/* Page navigation */}
         <nav className="flex items-center gap-1">
           {[
-            { to: '/',        label: '🔍 Analyze'  },
-            { to: '/journal', label: '📓 Journal'  },
+            { to: '/',            label: '🔍 Analyze'     },
+            { to: '/journal',     label: '📓 Journal'     },
+            { to: '/performance', label: '📊 Performance' },
           ].map(({ to, label }) => (
             <NavLink
               key={to}
@@ -51,8 +53,9 @@ export default function App() {
       <div className="min-h-screen bg-background">
         <TopNav />
         <Routes>
-          <Route path="/"        element={<StockPage />}   />
-          <Route path="/journal" element={<JournalPage />} />
+          <Route path="/"            element={<StockPage />}       />
+          <Route path="/journal"     element={<JournalPage />}     />
+          <Route path="/performance" element={<PerformancePage />} />
         </Routes>
       </div>
     </BrowserRouter>

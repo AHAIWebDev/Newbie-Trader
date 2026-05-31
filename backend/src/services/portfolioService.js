@@ -220,6 +220,126 @@ async function resetPortfolio(startingCash) {
   });
 }
 
+// ─── Equity history ───────────────────────────────────────────────────────────
+
+// Replays all trades chronologically to produce an equity curve.
+// Equity at each point = cash + Σ(shares × lastTradePrice) for open positions.
+async function getEquityHistory() {
+  const portfolio = await getOrCreatePortfolio();
+  const trades = await prisma.trade.findMany({
+    where:   { portfolioId: PORTFOLIO_ID },
+    orderBy: { date: 'asc' },
+  });
+
+  if (trades.length === 0) {
+    return [{ date: portfolio.createdAt.toISOString(), equity: portfolio.startingCash, event: 'start' }];
+  }
+
+  const points = [];
+  let cash = portfolio.startingCash;
+  const positions = {}; // symbol → { shares, avgCost, lastPrice }
+
+  // Anchor point one second before the first trade
+  points.push({
+    date:   new Date(new Date(trades[0].date).getTime() - 1000).toISOString(),
+    equity: portfolio.startingCash,
+    event:  'start',
+    label:  'Start',
+  });
+
+  for (const trade of trades) {
+    if (trade.type === 'BUY') {
+      cash -= trade.total;
+      const ex = positions[trade.symbol];
+      if (ex) {
+        const totalShares = ex.shares + trade.shares;
+        const avgCost = (ex.shares * ex.avgCost + trade.shares * trade.price) / totalShares;
+        positions[trade.symbol] = { shares: totalShares, avgCost, lastPrice: trade.price };
+      } else {
+        positions[trade.symbol] = { shares: trade.shares, avgCost: trade.price, lastPrice: trade.price };
+      }
+    } else {
+      cash += trade.total;
+      const pos = positions[trade.symbol];
+      if (pos) {
+        const remaining = pos.shares - trade.shares;
+        if (remaining <= 0) {
+          delete positions[trade.symbol];
+        } else {
+          positions[trade.symbol] = { ...pos, shares: remaining, lastPrice: trade.price };
+        }
+      }
+    }
+
+    const positionValue = Object.values(positions).reduce(
+      (sum, pos) => sum + pos.shares * pos.lastPrice, 0
+    );
+
+    points.push({
+      date:   new Date(trade.date).toISOString(),
+      equity: parseFloat((cash + positionValue).toFixed(2)),
+      event:  trade.type,
+      symbol: trade.symbol,
+      label:  `${trade.type} ${trade.symbol}`,
+    });
+  }
+
+  return points;
+}
+
+// ─── Signal accuracy ──────────────────────────────────────────────────────────
+
+// Breaks down closed SELL trades by the RSI and SMA signals present at sell time.
+async function getSignalAccuracy() {
+  const trades = await prisma.trade.findMany({
+    where: { portfolioId: PORTFOLIO_ID, type: 'SELL' },
+  });
+
+  const closed = trades.filter(t => t.pnl != null);
+  if (closed.length === 0) return { rsi: [], sma: [], totalClosedTrades: 0 };
+
+  const rsiGroups = {};
+  const smaGroups = {};
+
+  for (const t of closed) {
+    // RSI grouping
+    const rsiKey = t.rsiSignal || 'unknown';
+    if (!rsiGroups[rsiKey]) rsiGroups[rsiKey] = { signal: rsiKey, count: 0, wins: 0, totalPnl: 0 };
+    rsiGroups[rsiKey].count++;
+    if (t.pnl > 0) rsiGroups[rsiKey].wins++;
+    rsiGroups[rsiKey].totalPnl += t.pnl;
+
+    // SMA trend grouping
+    const hasSma = t.sma20Signal && t.sma50Signal &&
+                   t.sma20Signal !== 'unknown' && t.sma50Signal !== 'unknown';
+    if (hasSma) {
+      const smaKey = t.sma20Signal === 'bullish' && t.sma50Signal === 'bullish' ? 'Both Bullish'
+                   : t.sma20Signal === 'bearish' && t.sma50Signal === 'bearish' ? 'Both Bearish'
+                   : 'Mixed';
+      if (!smaGroups[smaKey]) smaGroups[smaKey] = { signal: smaKey, count: 0, wins: 0, totalPnl: 0 };
+      smaGroups[smaKey].count++;
+      if (t.pnl > 0) smaGroups[smaKey].wins++;
+      smaGroups[smaKey].totalPnl += t.pnl;
+    }
+  }
+
+  const toRow = g => ({
+    signal:   g.signal,
+    count:    g.count,
+    wins:     g.wins,
+    losses:   g.count - g.wins,
+    winRate:  parseFloat(((g.wins / g.count) * 100).toFixed(0)),
+    avgPnl:   parseFloat((g.totalPnl / g.count).toFixed(2)),
+    totalPnl: parseFloat(g.totalPnl.toFixed(2)),
+  });
+
+  return {
+    rsi:               Object.values(rsiGroups).map(toRow).sort((a, b) => b.count - a.count),
+    sma:               Object.values(smaGroups).map(toRow).sort((a, b) => b.count - a.count),
+    totalClosedTrades: closed.length,
+  };
+}
+
 // ─── Serialization helper ─────────────────────────────────────────────────────
 
 // Reconstructs the `marketContext` object the frontend expects from flat DB columns.
@@ -241,6 +361,8 @@ module.exports = {
   executeBuy,
   executeSell,
   getPerformanceStats,
+  getEquityHistory,
+  getSignalAccuracy,
   resetPortfolio,
   serializeTrade,
 };

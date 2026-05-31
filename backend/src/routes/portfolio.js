@@ -102,6 +102,32 @@ router.get('/stats', async (req, res, next) => {
 });
 
 /**
+ * GET /api/portfolio/equity-history
+ * Returns account equity at each trade event, suitable for an equity curve chart.
+ */
+router.get('/equity-history', async (req, res, next) => {
+  try {
+    const history = await svc.getEquityHistory();
+    res.json(history);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/portfolio/signal-accuracy
+ * Returns win-rate breakdown by RSI and SMA signal at time of each closed trade.
+ */
+router.get('/signal-accuracy', async (req, res, next) => {
+  try {
+    const accuracy = await svc.getSignalAccuracy();
+    res.json(accuracy);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * POST /api/portfolio/reset
  * Body: { startingCash }  (default 10000)
  * Wipes all trades and positions, resets cash.
