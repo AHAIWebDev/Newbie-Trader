@@ -185,7 +185,7 @@ Does this news sentiment align with or contradict typical technical indicator si
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 600,
+    max_tokens: 1024,
     system: `You are a financial news educator inside a beginner's paper trading app called Newbie Trader. Explain financial news in plain English for someone new to investing. Never give direct buy or sell advice. Always remind the reader that news sentiment can reverse quickly and does not guarantee price movement. This is for educational purposes only.`,
     messages: [{ role: 'user', content: prompt }]
   });
