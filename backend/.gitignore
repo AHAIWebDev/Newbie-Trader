@@ -22,5 +22,5 @@ build/
 /src/generated/prisma
 
 # SQLite database file — local dev only, never commit
-prisma/*.db
-prisma/*.db-journal
+prisma/**/*.db
+prisma/**/*.db-journal
