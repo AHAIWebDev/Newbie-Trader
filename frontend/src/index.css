@@ -61,7 +61,7 @@
     background:
       linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px),
-      rgba(10, 15, 30, 0.88);
+      rgba(10, 15, 30, 0.93);
     background-size: 50px 50px, 50px 50px, cover;
     pointer-events: none;
     z-index: 1;
