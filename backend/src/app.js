@@ -54,7 +54,13 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    polygonConfigured: !!process.env.POLYGON_API_KEY
+    config: {
+      polygonApi:   !!process.env.POLYGON_API_KEY,
+      anthropicApi: !!process.env.ANTHROPIC_API_KEY,
+      newsApi:      !!process.env.NEWSAPI_KEY,
+      database:     !!process.env.DATABASE_URL,
+      frontendUrl:  process.env.FRONTEND_URL ?? 'not set'
+    }
   });
 });
 
