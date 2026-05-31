@@ -22,7 +22,6 @@ export default function Portfolio({
     try {
       const data = await getPortfolio();
       setPortfolio(data);
-      onCashChange?.(data.cash);
     } catch {
       // If the API is unreachable on first load, show empty state rather than crash
       setPortfolio({ cash: 0, startingCash: 10000, positions: [], trades: [] });
@@ -32,6 +31,19 @@ export default function Portfolio({
   }, []);
 
   useEffect(() => { loadPortfolio(); }, [loadPortfolio]);
+
+  // Propagate totalEquity (cash + market value of all positions) to parent
+  // whenever portfolio state or the current price/symbol changes.
+  useEffect(() => {
+    if (!portfolio) return;
+    const equity = portfolio.positions.reduce((sum, pos) => {
+      const price = pos.symbol === symbol && currentPrice
+        ? currentPrice
+        : pos.lastPrice ?? pos.avgCost;
+      return sum + pos.shares * price;
+    }, portfolio.cash);
+    onCashChange?.(equity);
+  }, [portfolio, currentPrice, symbol]);
 
   // ─── Derived values ────────────────────────────────────────────────────────
 
@@ -112,7 +124,6 @@ export default function Portfolio({
           cash:      result.cash,
           positions: upsertPosition(prev.positions, trade, trade.price),
         }));
-        onCashChange?.(result.cash);
       } else {
         const result = await executeSell({
           symbol:        trade.symbol,
@@ -129,7 +140,6 @@ export default function Portfolio({
           cash:      result.cash,
           positions: removeOrReducePosition(prev.positions, trade),
         }));
-        onCashChange?.(result.cash);
       }
     } catch (err) {
       setTradeError(err.response?.data?.error ?? 'Trade failed. Please try again.');
@@ -145,7 +155,6 @@ export default function Portfolio({
     try {
       const updated = await resetPortfolio(amount);
       setPortfolio({ ...updated, positions: [] });
-      onCashChange?.(updated.cash);
     } catch {
       alert('Reset failed. Please try again.');
     }

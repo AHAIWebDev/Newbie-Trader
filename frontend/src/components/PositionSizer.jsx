@@ -29,7 +29,7 @@ function InputField({ label, field, value, onChange, hint }) {
   );
 }
 
-export default function PositionSizer({ symbol, currentPrice, portfolioCash }) {
+export default function PositionSizer({ symbol, currentPrice, portfolioValue }) {
   const [form, setForm] = useState({
     portfolio:   '10000',
     entry:       '',
@@ -40,12 +40,12 @@ export default function PositionSizer({ symbol, currentPrice, portfolioCash }) {
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Sync portfolio cash from the Portfolio component whenever it changes
+  // Sync total equity from the Portfolio component whenever it changes
   useEffect(() => {
-    if (portfolioCash !== undefined && portfolioCash !== null) {
-      setForm(prev => ({ ...prev, portfolio: portfolioCash.toFixed(2) }));
+    if (portfolioValue !== undefined && portfolioValue !== null) {
+      setForm(prev => ({ ...prev, portfolio: portfolioValue.toFixed(2) }));
     }
-  }, [portfolioCash]);
+  }, [portfolioValue]);
 
   // Sync entry price when a new stock is loaded
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function PositionSizer({ symbol, currentPrice, portfolioCash }) {
           field="portfolio"
           value={form.portfolio}
           onChange={handleChange}
-          hint="Synced from your paper portfolio"
+          hint="Total equity: cash + open positions (synced automatically)"
         />
         <InputField
           label="Entry Price"

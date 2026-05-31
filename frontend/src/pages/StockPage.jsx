@@ -13,7 +13,7 @@ export default function StockPage() {
   const [stock,          setStock]          = useState(null);
   const [loading,        setLoading]        = useState(false);
   const [error,          setError]          = useState(null);
-  const [portfolioCash,  setPortfolioCash]  = useState(10000);
+  const [portfolioValue, setPortfolioValue] = useState(10000);
 
   /**
    * Lifted from AnalysisCard — stores Claude's result so the
@@ -104,7 +104,7 @@ export default function StockPage() {
               currentPrice={stock.price.close}
               indicators={stock.indicators}
               currentAnalysis={currentAnalysis}
-              onCashChange={setPortfolioCash}
+              onCashChange={setPortfolioValue}
             />
           </div>
 
@@ -114,7 +114,7 @@ export default function StockPage() {
             <PositionSizer
               symbol={stock.symbol}
               currentPrice={stock.price.close}
-              portfolioCash={portfolioCash}
+              portfolioValue={portfolioValue}
             />
           </div>
 

@@ -53,7 +53,7 @@ const buildAnalysisPrompt = (stockData) => {
   const { symbol, company, price, indicators } = stockData;
   const { sma20, sma50, rsi14, interpretations } = indicators;
 
-  return `Please analyze the following stock data for a beginner swing trader with a $10,000 paper trading portfolio.
+  return `Please analyze the following stock data for a beginner swing trader with a paper trading account. Their current total equity is approximately $10,000 (cash plus open positions).
 
 ## Stock: ${symbol} — ${company.name}
 - Sector: ${company.sector ?? 'Unknown'}
