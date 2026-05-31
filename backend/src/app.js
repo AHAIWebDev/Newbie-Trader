@@ -25,12 +25,34 @@ const PORT = process.env.PORT || 3001;
 // helmet sets secure HTTP response headers automatically
 app.use(helmet());
 
-// cors allows the React frontend (on a different port) to call this API
-// In production you'd restrict this to your specific domain
+// cors allows the React frontend (on a different port) to call this API.
+// Vercel preview deployments get a unique subdomain on every push, so we
+// match the whole newbie-trader-*.vercel.app family in addition to any
+// explicit origins listed in FRONTEND_URL.
+const VERCEL_PREVIEW_RE = /^https:\/\/newbie-trader[a-zA-Z0-9-]*\.vercel\.app$/;
+
+const DEV_ORIGINS = ['http://localhost:5173', 'http://localhost:3000'];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(',')
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin header (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const envOrigins = process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
+      : [];
+
+    const allowed =
+      DEV_ORIGINS.includes(origin) ||
+      envOrigins.includes(origin) ||
+      VERCEL_PREVIEW_RE.test(origin);
+
+    if (allowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin not allowed — ${origin}`));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
