@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "npx prisma migrate deploy && node src/app.js",
     "dev": "nodemon src/app.js",
     "test": "echo \"Tests coming in Phase 2\" && exit 0"
   },
