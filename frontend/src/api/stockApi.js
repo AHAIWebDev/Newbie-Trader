@@ -71,3 +71,60 @@ export const getNews = async (symbol, fresh = false) => {
   );
   return data;
 };
+
+// ─── Portfolio API ────────────────────────────────────────────────────────────
+
+/** Returns the portfolio with cash and current positions. */
+export const getPortfolio = async () => {
+  const { data } = await client.get('/portfolio');
+  return data;
+};
+
+/**
+ * Execute a buy trade.
+ * @param {{ symbol, shares, price, total, reasoning, marketContext }} trade
+ */
+export const executeBuy = async (trade) => {
+  const { data } = await client.post('/portfolio/buy', trade);
+  return data;
+};
+
+/**
+ * Execute a sell trade.
+ * @param {{ symbol, shares, price, total, pnl, pnlPct, reasoning, marketContext }} trade
+ */
+export const executeSell = async (trade) => {
+  const { data } = await client.post('/portfolio/sell', trade);
+  return data;
+};
+
+/** Returns all trades newest-first, each with a `marketContext` object. */
+export const getTrades = async () => {
+  const { data } = await client.get('/portfolio/trades');
+  return data;
+};
+
+/**
+ * Persist outcome notes for a trade.
+ * @param {number} id
+ * @param {string} outcomeNotes
+ */
+export const updateTradeNotes = async (id, outcomeNotes) => {
+  const { data } = await client.patch(`/portfolio/trades/${id}`, { outcomeNotes });
+  return data;
+};
+
+/** Aggregate performance stats (win rate, total P&L, etc.). */
+export const getPortfolioStats = async () => {
+  const { data } = await client.get('/portfolio/stats');
+  return data;
+};
+
+/**
+ * Wipe all trades and positions; reset cash.
+ * @param {number} startingCash
+ */
+export const resetPortfolio = async (startingCash = 10000) => {
+  const { data } = await client.post('/portfolio/reset', { startingCash });
+  return data;
+};

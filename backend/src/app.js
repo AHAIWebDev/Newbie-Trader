@@ -13,8 +13,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-const stockRoutes = require('./routes/stock');
-const errorHandler = require('./middleware/errorHandler');
+const stockRoutes     = require('./routes/stock');
+const portfolioRoutes = require('./routes/portfolio');
+const errorHandler    = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,7 +31,7 @@ app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? 'https://your-production-domain.com'
     : ['http://localhost:5173', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -60,7 +61,8 @@ app.get('/health', (req, res) => {
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
 // All stock-related routes are prefixed with /api/stock
-app.use('/api/stock', stockRoutes);
+app.use('/api/stock',      stockRoutes);
+app.use('/api/portfolio',  portfolioRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 

@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Single-user paper portfolio. Only one row ever exists.
+model Portfolio {
+  id           Int        @id @default(autoincrement())
+  cash         Float      @default(10000)
+  startingCash Float      @default(10000)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  positions    Position[]
+  trades       Trade[]
+}
+
+// One row per symbol currently held. Removed when shares drop to 0.
+model Position {
+  id          Int       @id @default(autoincrement())
+  portfolioId Int
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  symbol      String
+  shares      Int
+  avgCost     Float
+  lastPrice   Float
+  addedAt     DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([portfolioId, symbol])
+}
+
+// Permanent record of every buy/sell. Never deleted except on portfolio reset.
+// Market-context fields snapshot indicator state at the moment of the trade.
+model Trade {
+  id           Int       @id @default(autoincrement())
+  portfolioId  Int
+  portfolio    Portfolio @relation(fields: [portfolioId], references: [id])
+  type         String    // "BUY" | "SELL"
+  symbol       String
+  shares       Int
+  price        Float
+  total        Float
+  date         DateTime  @default(now())
+  reasoning    String
+  outcomeNotes String    @default("")
+  pnl          Float?
+  pnlPct       Float?
+  rsiValue     Float?
+  rsiSignal    String?
+  sma20Signal  String?
+  sma50Signal  String?
+  aiConfidence Float?
+  aiAnalyzedAt String?
+}
